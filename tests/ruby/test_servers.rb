@@ -84,11 +84,11 @@ class TestServers < Test::Unit::TestCase
     #personalities={SSH_PUBLIC_KEY => "/root/.ssh/authorized_keys", tmp_file.path => "/tmp/foo/bar"}
     # NOTE: injecting two or more files doesn't work for now
     personalities={SSH_PUBLIC_KEY => "/root/.ssh/authorized_keys"}
-    server = create_server(:name => "test1", :imageId => image_id, :flavorId => 2, :personality => personalities)
+    server = create_server(:name => "test1", :imageRef => image_id, :flavorRef => 2, :personality => personalities)
 
     assert_not_nil(server.adminPass)
     assert_not_nil(server.hostId)
-    assert_equal(2, server.flavorId)
+    assert_equal('2', server.flavorId)
     assert_equal(image_id, server.imageId.to_s)
     assert_equal('test1', server.name)
     server = @conn.server(server.id)
@@ -104,8 +104,8 @@ class TestServers < Test::Unit::TestCase
       fail('Timeout creating server.')
     end
 
-    ping_test(server.addresses[:private][0])
-    ssh_test(server.addresses[:private][0])
+    ping_test(server.addresses[:public][0][:addr])
+    ssh_test(server.addresses[:public][0][:addr])
 
     server
 
@@ -150,14 +150,14 @@ class TestServers < Test::Unit::TestCase
   def test_create_server_with_metadata
 
     metadata={ "key1" => "value1", "key2" => "value2" }
-    server = create_server(:name => "test1", :imageId => @image_id, :flavorId => 1, :metadata => metadata)
+    server = create_server(:name => "test1", :imageRef => @image_id, :flavorRef => 1, :metadata => metadata)
     assert_not_nil(server.adminPass)
-    assert_equal(1, server.flavorId)
+    assert_equal('1', server.flavorId)
     assert_equal(@image_id, server.imageId.to_s)
     assert_equal('test1', server.name)
     assert_not_nil(server.hostId)
     metadata.each_pair do |key, value|
-      assert_equal(value, server.metadata[key])
+      assert_equal(value, server.metadata.get_item(key))
     end
 
   end
